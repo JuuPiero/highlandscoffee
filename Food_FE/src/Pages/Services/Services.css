@@ -1,0 +1,33 @@
+/* .service-item {
+  scale: 1;
+  animation: ease-in 0.5s;
+}
+
+.service-item:hover {
+  scale: 1.05;
+} */
+
+.service__media {
+  margin-top: 17px;
+  position: relative;
+}
+.service__media::after {
+  position: absolute;
+  content: "";
+  left: 30px;
+  bottom: 0;
+  right: 16px;
+  height: 80%;
+  border-radius: 10px;
+  background-color: #eaf818;
+  background-image: linear-gradient(315deg, #eaf818 0%, #f6fc9c 74%);
+}
+
+.service__img {
+  left: 20px;
+  top: 1%;
+  width: 100%;
+  z-index: 1;
+  position: relative;
+  display: block;
+}
