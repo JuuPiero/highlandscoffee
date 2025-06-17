@@ -20,6 +20,8 @@ const CartPage = () => {
   
   const [shippings, setShippings] = useState([])
   const [shipping, setShipping] = useState(0)
+  const [city, setCity] = useState("")
+
 
   const [vouchers, setVouchers] = useState([])
   const [voucherCode, setVoucherCode] = useState('');
@@ -101,7 +103,7 @@ const CartPage = () => {
       solongsanpham: solongsanpham,
       tongtien: (parseFloat(tongtien)+ parseFloat(shipping) - parseFloat(discountAmount)),
       trangthai: formData.trangthai,
-      diachinhan: formData.diachinhan + " " + formData.city,
+      diachinhan: formData.diachinhan + " " + city,
       tennguoinhan: formData.tennguoinhan,
       sdtnguoinhan: formData.sdtnguoinhan,
     };
@@ -276,16 +278,19 @@ const CartPage = () => {
                   </label>
                    <select
                       name="city"
-                      value={formData.city}
                       onChange={(e) => {
-                        setShipping(e.target.value)
-                        handleInputChange(e)
-                        console.log(shipping)
+                        const selectedId = e.target.value;
+                        const selectedShipping = shippings.find(s => s.id === parseInt(selectedId));
+                        if (selectedShipping) {
+                          setShipping(selectedShipping.price);
+                          setCity(selectedShipping.city);
+                        }
+                        handleInputChange(e);
                       }}
                       className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     >
                       {
-                        shippings.map(shipping => <option key={shipping.id} value={shipping.price}>
+                        shippings.map(shipping => <option key={shipping.id} value={shipping.id}>
                                                     {shipping.city}
                                                   </option>)
                       }
