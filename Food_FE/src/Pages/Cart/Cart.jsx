@@ -7,21 +7,22 @@ import { Navigate, useNavigate } from "react-router-dom";
 const CartPage = () => {
   const { cart, removeFromCart, confirmCart, updateQuantity, clearCart } =
     useCart();
-  const [Data, setData] = useState();
+  const [data, setData] = useState();
   const [showForm, setShowForm] = useState(false);
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     diachinhan: "",
     tennguoinhan: "",
     sdtnguoinhan: "",
-    city: ""
+    city: "",
+    trangthai: "Chờ xác nhận",
   });
-  // console.log(cart);
   
   const [shippings, setShippings] = useState([])
   const [shipping, setShipping] = useState(0)
+
+  const [vouchers, setVouchers] = useState([])
   const [voucherCode, setVoucherCode] = useState('');
-  const [voucher, setVoucher] = useState(null);
   const [discountAmount, setDiscountAmount] = useState(0);
 
 
@@ -31,6 +32,7 @@ const CartPage = () => {
       try {
         const response = await axios.get("http://localhost:3000/getProduct");
         setData(response.data);
+        
       } catch (err) {
         console.log(err);
       } finally {
@@ -50,8 +52,19 @@ const CartPage = () => {
       } 
     }
 
+    const getVoucers = async() => {
+      try {
+        const response = await axios.get("http://localhost:3000/vouchers")
+        setVouchers(response.data)
+
+      } catch (error) {
+        console.log(error);
+      }
+    }
+
     fetchData();
     getShippings()
+    getVoucers()
   }, []);
 
   const postData = async (data) => {
@@ -64,7 +77,6 @@ const CartPage = () => {
     }
   };
   const handleConfirmCart = async () => {
-    console.log("Đã xác nhận giỏ hàng:", cart);
     setShowForm(true);
   };
   const handleInputChange = (e) => {
@@ -87,25 +99,23 @@ const CartPage = () => {
       cart: cart,
       name: name,
       solongsanpham: solongsanpham,
-      tongtien: tongtien + shipping - discountAmount,
-      trangthai: trangthai,
-      diachinhan: formData.diachinhan,
+      tongtien: (parseFloat(tongtien)+ parseFloat(shipping) - parseFloat(discountAmount)),
+      trangthai: formData.trangthai,
+      diachinhan: formData.diachinhan + " " + formData.city,
       tennguoinhan: formData.tennguoinhan,
       sdtnguoinhan: formData.sdtnguoinhan,
     };
-    
-    console.log(data);
+   
     await postData(data);
     navigate("/Orders");
   };
   const handleIncreaseQuantity = async (productId) => {
-    const productdatasoluong = Data.find((item) => item.idsp === productId);
-    console.log(productdatasoluong);
+    const productdatasoluong = data.find((item) => item.idsp === productId);
     const product = cart.find((item) => item.idsp === productId);
     if (product) {
       const newQuantity = product.quantity + 1;
       if (newQuantity > productdatasoluong.soluong) {
-        alert("Banj khong the them qua so luong cua san pham");
+        alert("Ban khong the them qua so luong cua san pham");
         return;
       } else {
         updateQuantity(productId, newQuantity);
@@ -130,18 +140,17 @@ const CartPage = () => {
 
   useEffect(() => {
         if (voucherCode.trim() === "") {
-            setVoucher(null);
             setDiscountAmount(0);
             return;
         }
 
-        const saved = localStorage.getItem('saveVouchers');
-        if (saved) {
+        // const saved = localStorage.getItem('saveVouchers');
+        if (vouchers) {
             try {
-                const vouchers = JSON.parse(saved);
+                // const vouchers = JSON.parse(saved);
                 const found = vouchers.find(v => v.code.toLowerCase() === voucherCode.toLowerCase());
                 if (found) {
-                    setVoucher(found);
+                    // setVoucher(found);
 
                     const discount = found.type === 'percent'
                         ? Math.floor((found.value / 100) * tongtien)
@@ -149,7 +158,7 @@ const CartPage = () => {
 
                     setDiscountAmount(discount);
                 } else {
-                    setVoucher(null);
+                    // setVoucher(null);
                     setDiscountAmount(0);
                 }
             } catch (e) {
@@ -158,7 +167,7 @@ const CartPage = () => {
         }
     }, [voucherCode, cart]);
 
-  const trangthai = "Chờ xác nhận";
+  
   return (
     <div className="cart-page py-11">
       <div className="news-wrapper px-[15px] max-w-[1200px] mx-auto">
@@ -349,7 +358,7 @@ const CartPage = () => {
                   Phí vận chuyển: <strong>{formatCurrencyVND(shipping.toString())}</strong>
                 </div>
                 <div>
-                  Khuyến mại: <strong>{formatCurrencyVND(discountAmount.toString())}</strong>
+                  Khuyến mại: <strong>-{formatCurrencyVND(discountAmount.toString())}</strong>
                 </div>
                 <div className="text-[1.4rem]">
                   Tổng giá trị đơn hàng: <strong>{formatCurrencyVND((parseFloat(tongtien) + parseFloat(shipping) - parseFloat(discountAmount)).toString())}</strong>

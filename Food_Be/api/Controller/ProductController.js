@@ -92,7 +92,7 @@ module.exports = {
   },
   getProduct: (req, res) => {
     const query =
-      "SELECT SanPham.*, Type.type_name FROM   SanPham INNER JOIN   Type ON  SanPham.idType = Type.idType";
+      "SELECT sanpham.*, Type.type_name FROM sanpham INNER JOIN type ON sanpham.idType = Type.idType";
 
     db.query(query, (err, results) => {
       if (err) {
@@ -225,6 +225,7 @@ module.exports = {
         }
 
         const idnguoidung = userRows[0].idnguoidung;
+
         db.execute(
           "SELECT * FROM DonHang WHERE idnguoidung = ?",
           [idnguoidung],
@@ -237,7 +238,8 @@ module.exports = {
             }
 
             const orderIds = orders.map((order) => order.iddonhang);
-
+            console.log(orderIds);
+            
             if (orderIds.length > 0) {
               db.execute(
                 `SELECT * FROM DonHangChiTiet WHERE iddonhang IN (${orderIds.join(
